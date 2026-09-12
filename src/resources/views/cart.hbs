@@ -2,14 +2,18 @@
   <h2>Giỏ hàng của bạn</h2>
 
   <div id="cart-empty" class="alert alert-info" style="display:none;">
-    Giỏ hàng trống. <a href="/products">Mua sắm tại đây.</a>
+    Giỏ hàng trống.
+    <a href="/products">Mua sắm tại đây.</a>
   </div>
 
   {{#if items.length}}
-  <button id="clear-cart" class="btn btn-warning mb-3">Xóa tất cả</button>
 
-  <!-- DESKTOP TABLE -->
-  <div class="table-responsive d-none d-md-block">
+  <button id="clear-cart" class="btn btn-warning mb-3">
+    Xóa tất cả
+  </button>
+
+  <!-- DESKTOP -->
+  <div class="table-responsive d-none d-md-block" id="desktop-cart">
     <table class="table table-striped align-middle">
       <thead class="table-dark">
         <tr>
@@ -21,133 +25,599 @@
           <th></th>
         </tr>
       </thead>
+
       <tbody>
+
         {{#each items}}
-        <tr data-id="{{this.cartItemId}}">
-          <td><img src="{{this.img}}" class="cart-img"></td>
+        <tr class="cart-item"
+            data-cart-id="{{this.cartItemId}}">
+
+          <td>
+            <img src="{{this.img}}" class="cart-img">
+          </td>
+
           <td>{{this.name}}</td>
-          <td class="price" data-value="{{this.price}}">{{formatPrice this.price}}</td>
+
           <td>
-            <input type="number" value="{{this.quantity}}" min="0" class="form-control quantity-input" data-id="{{this.cartItemId}}">
+            {{formatPrice this.price}}
           </td>
-          <td id="total-{{this.cartItemId}}">{{formatPrice (multiply this.price this.quantity)}}</td>
+
           <td>
-            <button class="btn btn-danger btn-sm remove-btn" data-id="{{this.cartItemId}}">Xóa</button>
+            <input
+              type="number"
+              min="0"
+              value="{{this.quantity}}"
+              class="form-control quantity-input"
+              data-cart-id="{{this.cartItemId}}">
           </td>
+
+          <td id="total-{{this.cartItemId}}">
+            {{formatPrice (multiply this.price this.quantity)}}
+          </td>
+
+          <td>
+            <button
+              class="btn btn-danger btn-sm remove-btn"
+              data-cart-id="{{this.cartItemId}}">
+              Xóa
+            </button>
+          </td>
+
         </tr>
         {{/each}}
+
       </tbody>
     </table>
   </div>
 
-  <!-- MOBILE CARDS -->
-  <div class="d-block d-md-none">
+  <!-- MOBILE -->
+  <div class="d-block d-md-none" id="mobile-cart">
+
     {{#each items}}
-    <div class="cart-card" data-id="{{this.cartItemId}}">
+
+    <div class="cart-card cart-item"
+         data-cart-id="{{this.cartItemId}}">
+
       <div class="cart-card-row">
+
         <img src="{{this.img}}" alt="{{this.name}}">
+
         <div class="cart-card-info">
-          <p><strong>{{this.name}}</strong></p>
-          <p>Giá: {{formatPrice this.price}}</p>
+
+          <p>
+            <strong>{{this.name}}</strong>
+          </p>
+
+          <p>
+            Giá: {{formatPrice this.price}}
+          </p>
+
           <p>
             Số lượng:
-            <input type="number" value="{{this.quantity}}" min="0" class="form-control quantity-input" data-id="{{this.cartItemId}}">
+
+            <input
+              type="number"
+              min="0"
+              value="{{this.quantity}}"
+              class="form-control quantity-input"
+              data-cart-id="{{this.cartItemId}}">
           </p>
-          <p>Tổng: <span id="total-{{this.cartItemId}}">{{formatPrice (multiply this.price this.quantity)}}</span></p>
-          <button class="btn btn-danger btn-sm remove-btn w-100 mt-2" data-id="{{this.cartItemId}}">Xóa</button>
+
+          <p>
+            Tổng:
+            <span id="total-{{this.cartItemId}}">
+              {{formatPrice (multiply this.price this.quantity)}}
+            </span>
+          </p>
+
+          <button
+            class="btn btn-danger btn-sm w-100 mt-2 remove-btn"
+            data-cart-id="{{this.cartItemId}}">
+
+            Xóa
+
+          </button>
+
         </div>
       </div>
     </div>
+
     {{/each}}
+
   </div>
 
-  <div id="cart-summary" class="cart-summary mt-3 p-3 border rounded bg-light"
-       data-total="{{total}}" 
-       data-discount="{{discountPercent}}" 
-       data-discount-amount="{{discountAmount}}" 
+  <!-- SUMMARY -->
+  <div id="cart-summary"
+       class="cart-summary mt-3 p-3 border rounded bg-light"
+
+       data-total="{{total}}"
+       data-discount="{{discountPercent}}"
+       data-discount-amount="{{discountAmount}}"
        data-final="{{finalTotal}}">
-    <h5>Tổng tạm tính: <span id="cart-total">{{formatPrice total}}</span></h5>
-    <p class="text-success mb-1" id="discount-info">
-      {{#if discountPercent}}
-        Giảm giá: {{discountPercent}}% (-<span id="discount-amount">{{formatPrice discountAmount}}</span>)
-      {{else}}
-        Không có khuyến mãi áp dụng
-      {{/if}}
-    </p>
-    <h4 id="final-total">{{formatPrice finalTotal}}</h4>
 
-    <form action="/payment/momo" method="POST" class="mt-2">
-      <button type="submit" class="btn btn-success btn-lg w-100">Thanh toán</button>
+    <h5>
+      Tổng tạm tính:
+      <span id="cart-total">
+        {{formatPrice total}}
+      </span>
+    </h5>
+
+    <p class="text-success mb-1" id="discount-info">
+
+      {{#if discountPercent}}
+
+      Giảm giá:
+      {{discountPercent}}%
+
+      (-<span id="discount-amount">
+        {{formatPrice discountAmount}}
+      </span>)
+
+      {{else}}
+
+      Không có khuyến mãi áp dụng
+
+      {{/if}}
+
+    </p>
+
+    <h4 id="final-total">
+      {{formatPrice finalTotal}}
+    </h4>
+
+    <form action="/payment/momo"
+          method="POST"
+          class="mt-2">
+
+      <button type="submit"
+              class="btn btn-success btn-lg w-100">
+
+        Thanh toán
+
+      </button>
+
     </form>
+
   </div>
+
   {{/if}}
 </div>
 
+<script>
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    // =========================
+    // FORMAT PRICE
+    // =========================
+
+    function formatPrice(value){
+
+        return Number(value).toLocaleString(
+            'vi-VN',
+            {
+                style: 'currency',
+                currency: 'VND'
+            }
+        );
+    }
+
+    // =========================
+    // DEBOUNCE
+    // =========================
+
+    function debounce(fn, delay){
+
+        let timer;
+
+        return function(...args){
+
+            clearTimeout(timer);
+
+            timer = setTimeout(() => {
+                fn.apply(this, args);
+            }, delay);
+        }
+    }
+
+    // =========================
+    // REMOVE ITEM UI
+    // =========================
+
+    function removeItemUI(cartItemId){
+
+        document
+            .querySelectorAll(
+                `.cart-item[data-cart-id="${cartItemId}"]`
+            )
+            .forEach(el => {
+
+                el.style.transition = '0.2s';
+                el.style.opacity = '0';
+
+                setTimeout(() => {
+                    el.remove();
+                    checkCartEmpty();
+                }, 200);
+            });
+    }
+
+    // =========================
+    // UPDATE SUMMARY UI
+    // =========================
+
+    function updateSummary(data){
+
+        const cartTotal = document.getElementById('cart-total');
+
+        const discountInfo = document.getElementById('discount-info');
+
+        const finalTotal = document.getElementById('final-total');
+
+        if(cartTotal){
+            cartTotal.textContent = data.totalFormatted;
+        }
+
+        if(finalTotal){
+            finalTotal.textContent = data.finalTotalFormatted;
+        }
+
+        if(discountInfo){
+
+            if(data.discountPercent > 0){
+
+                discountInfo.innerHTML = `
+                    Giảm giá:
+                    ${data.discountPercent}%
+                    (-${data.discountAmountFormatted})
+                `;
+
+            } else {
+
+                discountInfo.textContent =
+                    'Không có khuyến mãi áp dụng';
+            }
+        }
+    }
+
+    // =========================
+    // CHECK EMPTY CART
+    // =========================
+
+    function checkCartEmpty(){
+
+        const items =
+            document.querySelectorAll('.cart-item');
+
+        const emptyMsg =
+            document.getElementById('cart-empty');
+
+        const desktopCart =
+            document.getElementById('desktop-cart');
+
+        const mobileCart =
+            document.getElementById('mobile-cart');
+
+        const clearBtn =
+            document.getElementById('clear-cart');
+
+        const summary =
+            document.getElementById('cart-summary');
+
+        if(items.length === 0){
+
+            if(emptyMsg)
+                emptyMsg.style.display = 'block';
+
+            if(desktopCart)
+                desktopCart.classList.add('d-none');
+
+            if(mobileCart)
+                mobileCart.classList.add('d-none');
+
+            if(clearBtn)
+                clearBtn.style.display = 'none';
+
+            if(summary)
+                summary.style.display = 'none';
+
+        } else {
+
+            if(emptyMsg)
+                emptyMsg.style.display = 'none';
+
+            if(desktopCart)
+                desktopCart.classList.remove('d-none');
+
+            if(mobileCart)
+                mobileCart.classList.remove('d-none');
+
+            if(clearBtn)
+                clearBtn.style.display = 'inline-block';
+
+            if(summary)
+                summary.style.display = 'block';
+        }
+    }
+
+    checkCartEmpty();
+
+    // =========================
+    // UPDATE QUANTITY
+    // =========================
+
+    document
+        .querySelectorAll('.quantity-input')
+
+        .forEach(input => {
+
+            input.addEventListener(
+
+                'input',
+
+                debounce(async function(){
+
+                    const cartItemId =
+                        this.dataset.cartId;
+
+                    let quantity =
+                        Number(this.value);
+
+                    if(isNaN(quantity) || quantity < 0){
+                        quantity = 0;
+                    }
+
+                    // optimistic UI
+
+                    if(quantity === 0){
+
+                        removeItemUI(cartItemId);
+                    }
+
+                    // disable input
+
+                    this.disabled = true;
+
+                    try {
+
+                        const res = await fetch(
+
+                            `/carts/update/${cartItemId}`,
+
+                            {
+                                method: 'POST',
+
+                                headers: {
+                                    'Content-Type':
+                                    'application/json'
+                                },
+
+                                body: JSON.stringify({
+                                    quantity
+                                })
+                            }
+                        );
+
+                        const data = await res.json();
+
+                        if(data.success){
+
+                            // update item total
+
+                            const totalCell =
+                                document.getElementById(
+                                    `total-${cartItemId}`
+                                );
+
+                            if(
+                                totalCell &&
+                                quantity > 0
+                            ){
+
+                                totalCell.textContent =
+                                    data.itemTotalFormatted;
+                            }
+
+                            updateSummary(data);
+
+                            if(data.removeRow){
+
+                                removeItemUI(cartItemId);
+                            }
+
+                            checkCartEmpty();
+                        }
+
+                    } catch(err){
+
+                        console.error(err);
+
+                        alert('Có lỗi xảy ra');
+
+                    } finally {
+
+                        this.disabled = false;
+                    }
+
+                }, 300)
+            );
+        });
+
+    // =========================
+    // REMOVE SINGLE ITEM
+    // =========================
+
+    document
+        .querySelectorAll('.remove-btn')
+
+        .forEach(btn => {
+
+            btn.addEventListener(
+                'click',
+
+                async function(){
+
+                    const cartItemId =
+                        this.dataset.cartId;
+
+                    // optimistic remove
+
+                    removeItemUI(cartItemId);
+
+                    try {
+
+                        const res = await fetch(
+
+                            `/carts/remove/${cartItemId}`,
+
+                            {
+                                method: 'POST'
+                            }
+                        );
+
+                        const data =
+                            await res.json();
+
+                        if(data.success){
+
+                            updateSummary(data);
+
+                            checkCartEmpty();
+                        }
+
+                    } catch(err){
+
+                        console.error(err);
+
+                        alert('Có lỗi xảy ra');
+                    }
+                }
+            );
+        });
+
+    // =========================
+    // CLEAR CART
+    // =========================
+
+    const clearBtn =
+        document.getElementById('clear-cart');
+
+    if(clearBtn){
+
+        clearBtn.addEventListener(
+
+            'click',
+
+            async () => {
+
+                // optimistic UI
+
+                document
+                    .querySelectorAll('.cart-item')
+                    .forEach(el => el.remove());
+
+                checkCartEmpty();
+
+                try {
+
+                    const res = await fetch(
+                        '/carts/clear',
+                        {
+                            method: 'POST'
+                        }
+                    );
+
+                    const data =
+                        await res.json();
+
+                    if(data.success){
+
+                        updateSummary(data);
+                    }
+
+                } catch(err){
+
+                    console.error(err);
+
+                    alert('Có lỗi xảy ra');
+                }
+            }
+        );
+    }
+
+});
+
+</script>
+
 <style>
-.cart-container {
-    max-width: 1000px;
-    margin: auto;
-    padding: 15px;
+
+.cart-container{
+    max-width:1000px;
+    margin:auto;
+    padding:15px;
 }
 
-.cart-img {
-    width: 80px;
-    height: auto;
-    border-radius: 5px;
+.cart-img{
+    width:80px;
+    border-radius:6px;
 }
 
-.quantity-input {
-    max-width: 70px;
+.quantity-input{
+    max-width:70px;
 }
 
-/* Cart Summary */
-.cart-summary h4, .cart-summary h5 {
-    margin: 0.5rem 0;
+.table-responsive{
+    overflow-x:auto;
 }
 
-.table-responsive {
-    overflow-x: auto;
+.cart-card{
+    background:#fff;
+    border-radius:10px;
+    padding:12px;
+    margin-bottom:12px;
+    box-shadow:0 2px 8px rgba(0,0,0,.06);
 }
 
-/* Mobile card */
-.cart-card {
-    background: #fff;
-    border-radius: 10px;
-    padding: 12px;
-    margin-bottom: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+.cart-card-row{
+    display:flex;
+    gap:12px;
 }
 
-.cart-card-row {
-    display: flex;
-    gap: 12px;
+.cart-card-row img{
+    width:80px;
+    height:80px;
+    object-fit:cover;
+    border-radius:8px;
 }
 
-.cart-card-row img {
-    width: 80px;
-    height: 80px;
-    border-radius: 8px;
-    object-fit: cover;
+.cart-card-info p{
+    margin:4px 0;
+    font-size:14px;
 }
 
-.cart-card-info p {
-    margin: 4px 0;
-    font-size: 14px;
+.cart-summary h4,
+.cart-summary h5{
+    margin:.5rem 0;
 }
 
-@media (max-width: 768px) {
-    .cart-container h2 {
-        font-size: 1.5rem;
+@media(max-width:768px){
+
+    .cart-container h2{
+        font-size:1.5rem;
     }
-    .cart-summary {
-        font-size: 0.9rem;
+
+    .cart-summary{
+        font-size:.9rem;
     }
-    .btn-lg {
-        font-size: 0.9rem;
-        padding: 0.4rem 0.8rem;
+
+    .btn-lg{
+        font-size:.9rem;
+        padding:.4rem .8rem;
     }
-    .quantity-input {
-        max-width: 50px;
+
+    .quantity-input{
+        max-width:50px;
     }
 }
+
 </style>

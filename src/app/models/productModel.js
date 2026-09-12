@@ -148,63 +148,148 @@ class ProductModel {
     }
 
     // Lấy sản phẩm với phân trang + sort + search + gender filter
-    async getProductsPaginated(page = 1, limit = 8, sort = "newest", q = "", gender = "") {
-        let pool = await connectDB();
+    async getProductsPaginated(
+        page = 1,
+        limit = 8,
+        sort = "newest",
+        q = "",
+        gender = "") {
+        const pool = await connectDB();
         const offset = (page - 1) * limit;
 
-        //  Sắp xếp
-        let orderBy = "ORDER BY id DESC"; // mặc định: mới nhất
+        // SORT
+        let orderBy = "ORDER BY id DESC";
+
         switch (sort) {
             case "oldest":
                 orderBy = "ORDER BY id ASC";
                 break;
+
             case "price_asc":
                 orderBy = "ORDER BY price ASC";
                 break;
+
             case "price_desc":
                 orderBy = "ORDER BY price DESC";
                 break;
         }
 
-        //  Điều kiện WHERE
-        let whereClause = "WHERE isDeleted = 0";
-        if (q && q.trim() !== "") {
-            whereClause += " AND name LIKE @q";
-        }
+        // WHERE
+        let whereConditions = [
+            "isDeleted = 0"
+        ];
 
-        // Lọc theo giới tính
-        if (gender && gender.trim() !== "") {
-            if (gender === "male") {
-                whereClause += " AND (gender = 'male' OR gender = 'unisex')";
-            } else if (gender === "female") {
-                whereClause += " AND (gender = 'female' OR gender = 'unisex')";
-            } else if (gender === "unisex") {
-                whereClause += " AND gender = 'unisex'";
+        // SEARCH
+        const keyword = q ? q.trim().toLowerCase() : "";
+
+        if (keyword !== "") {
+
+            // Từ khóa tìm kiếm được mở rộng
+            const searchKeywords = this.expandSearchKeywords(keyword);
+
+            // Tạo điều kiện:
+            // name LIKE
+            // OR des LIKE
+            // OR category LIKE
+            // OR gender LIKE
+            const searchConditions = [];
+
+            searchKeywords.forEach((word, index) => {
+
+                const paramName = `search${index}`;
+
+                searchConditions.push(`
+                    (
+                        LOWER(name) LIKE @${paramName}
+                        OR LOWER(des) LIKE @${paramName}
+                        OR LOWER(category) LIKE @${paramName}
+                        OR LOWER(gender) LIKE @${paramName}
+                    )
+                `);
+            });
+
+            if (searchConditions.length > 0) {
+                whereConditions.push(`
+                    (${searchConditions.join(" OR ")})
+                `);
             }
         }
 
-        //  Chuẩn bị request
-        let request = pool.request()
-            .input('offset', sql.Int, offset)
-            .input('limit', sql.Int, limit);
+        // GENDER FILTER
+        if (gender && gender.trim() !== "") {
 
-        if (q && q.trim() !== "") {
-            request.input('q', sql.NVarChar, `%${q}%`);
+            if (gender === "male") {
+
+                whereConditions.push(`
+                    (gender = 'male' OR gender = 'unisex')
+                `);
+
+            } else if (gender === "female") {
+
+                whereConditions.push(`
+                    (gender = 'female' OR gender = 'unisex')
+                `);
+
+            } else if (gender === "unisex") {
+
+                whereConditions.push(`
+                    gender = 'unisex'
+                `);
+            }
         }
 
-        //  Truy vấn danh sách sản phẩm
+        // WHERE HOÀN CHỈNH
+        const whereClause = `
+            WHERE ${whereConditions.join(" AND ")}
+        `;
+
+        // REQUEST LẤY SẢN PHẨM
+        const request = pool.request()
+            .input("offset", sql.Int, offset)
+            .input("limit", sql.Int, limit);
+
+        // Bind keyword
+        if (keyword !== "") {
+
+            const searchKeywords = this.expandSearchKeywords(keyword);
+
+            searchKeywords.forEach((word, index) => {
+
+                request.input(
+                    `search${index}`,
+                    sql.NVarChar,
+                    `%${word}%`
+                );
+            });
+        }
+
+        // LẤY SẢN PHẨM
+    
         const result = await request.query(`
-            SELECT * FROM Products
+            SELECT *
+            FROM Products
             ${whereClause}
             ${orderBy}
             OFFSET @offset ROWS
             FETCH NEXT @limit ROWS ONLY
         `);
 
-        // Đếm tổng sản phẩm
+        // REQUEST ĐẾM TOTAL
         const countRequest = pool.request();
-        if (q && q.trim() !== "") countRequest.input('q', sql.NVarChar, `%${q}%`);
-        if (gender && gender !== "unisex") countRequest.input('gender', sql.NVarChar, gender);
+
+        if (keyword !== "") {
+
+            const searchKeywords = this.expandSearchKeywords(keyword);
+
+            searchKeywords.forEach((word, index) => {
+
+                countRequest.input(
+                    `search${index}`,
+                    sql.NVarChar,
+                    `%${word}%`
+                );
+            });
+        }
 
         const countResult = await countRequest.query(`
             SELECT COUNT(*) AS total
@@ -220,39 +305,280 @@ class ProductModel {
 
 
 
-
     // Lấy sản phẩm theo category với phân trang
-    async getProductsByCategoryPaginated(category, page = 1, limit = 8) {
-        let pool = await connectDB();
+    async getProductsByCategoryPaginated(
+        category,
+        page = 1,
+        limit = 8,
+        sort = "newest",
+        q = "",
+        gender = "") {
+        const pool = await connectDB();
+
         const offset = (page - 1) * limit;
 
-        // Lấy sản phẩm theo category
-        let result = await pool.request()
-            .input('category', sql.NVarChar, category)
-            .input('offset', sql.Int, offset)
-            .input('limit', sql.Int, limit)
-            .query(`
-                SELECT * FROM Products 
-                WHERE category = @category AND isDeleted = 0
-                ORDER BY id DESC
-                OFFSET @offset ROWS
-                FETCH NEXT @limit ROWS ONLY
-            `);
+        // SORT
+        let orderBy = "ORDER BY id DESC";
 
-        // Tổng số sản phẩm của category
-        let countResult = await pool.request()
-            .input('category', sql.NVarChar, category)
-            .query("SELECT COUNT(*) AS total FROM Products WHERE category = @category AND isDeleted = 0");
+        switch (sort) {
+            case "oldest":
+                orderBy = "ORDER BY id ASC";
+                break;
 
-        const totalProducts = countResult.recordset[0].total;
+            case "price_asc":
+                orderBy = "ORDER BY price ASC";
+                break;
+
+            case "price_desc":
+                orderBy = "ORDER BY price DESC";
+                break;
+        }
+
+        // WHERE
+        const whereConditions = [
+            "category = @category",
+            "isDeleted = 0"
+        ];
+
+        // SEARCH
+        const keyword = q ? q.trim().toLowerCase() : "";
+
+        if (keyword !== "") {
+
+            const searchKeywords = this.expandSearchKeywords(keyword);
+
+            const searchConditions = [];
+
+            searchKeywords.forEach((word, index) => {
+
+                const paramName = `search${index}`;
+
+                searchConditions.push(`
+                    (
+                        LOWER(name) LIKE @${paramName}
+                        OR LOWER(des) LIKE @${paramName}
+                        OR LOWER(category) LIKE @${paramName}
+                        OR LOWER(gender) LIKE @${paramName}
+                    )
+                `);
+            });
+
+            if (searchConditions.length > 0) {
+                whereConditions.push(`
+                    (${searchConditions.join(" OR ")})
+                `);
+            }
+        }
+
+        // GENDER
+        if (gender && gender.trim() !== "") {
+
+            if (gender === "male") {
+
+                whereConditions.push(`
+                    (gender = 'male' OR gender = 'unisex')
+                `);
+
+            } else if (gender === "female") {
+
+                whereConditions.push(`
+                    (gender = 'female' OR gender = 'unisex')
+                `);
+
+            } else if (gender === "unisex") {
+
+                whereConditions.push(`
+                    gender = 'unisex'
+                `);
+            }
+        }
+
+        const whereClause = `
+            WHERE ${whereConditions.join(" AND ")}
+        `;
+
+        // REQUEST LẤY DATA
+        const request = pool.request()
+            .input("category", sql.NVarChar, category)
+            .input("offset", sql.Int, offset)
+            .input("limit", sql.Int, limit);
+
+        // Bind search parameters
+        if (keyword !== "") {
+
+            const searchKeywords = this.expandSearchKeywords(keyword);
+
+            searchKeywords.forEach((word, index) => {
+
+                request.input(
+                    `search${index}`,
+                    sql.NVarChar,
+                    `%${word}%`
+                );
+            });
+        }
+
+        // LẤY SẢN PHẨM
+        const result = await request.query(`
+            SELECT *
+            FROM Products
+            ${whereClause}
+            ${orderBy}
+            OFFSET @offset ROWS
+            FETCH NEXT @limit ROWS ONLY
+        `);
+
+        // COUNT
+        const countRequest = pool.request()
+            .input("category", sql.NVarChar, category);
+
+        if (keyword !== "") {
+
+            const searchKeywords = this.expandSearchKeywords(keyword);
+
+            searchKeywords.forEach((word, index) => {
+
+                countRequest.input(
+                    `search${index}`,
+                    sql.NVarChar,
+                    `%${word}%`
+                );
+            });
+        }
+
+        const countResult = await countRequest.query(`
+            SELECT COUNT(*) AS total
+            FROM Products
+            ${whereClause}
+        `);
 
         return {
             products: result.recordset,
-            total: totalProducts
+            total: countResult.recordset[0].total
         };
     }
 
-    // Tìm kiếm có phân trang
+    // MỞ RỘNG TỪ KHÓA TÌM KIẾM
+    expandSearchKeywords(keyword) {
+
+        const synonyms = {
+
+            // ÁO
+            "áo": [
+                "áo",
+                "shirt",
+                "tshirt",
+                "t-shirt",
+                "polo",
+                "hoodie",
+                "sweater"
+            ],
+
+            // HOODIE
+            "hoodie": [
+                "hoodie",
+                "áo hoodie",
+                "áo nỉ"
+            ],
+
+            // ÁO KHOÁC
+            "áo khoác": [
+                "áo khoác",
+                "jacket",
+                "bomber",
+                "coat",
+                "outerwear"
+            ],
+
+            "jacket": [
+                "jacket",
+                "áo khoác",
+                "bomber",
+                "outerwear"
+            ],
+
+            // QUẦN
+            "quần": [
+                "quần",
+                "pants",
+                "jean",
+                "jeans",
+                "shorts"
+            ],
+
+            "jean": [
+                "jean",
+                "jeans",
+                "quần"
+            ],
+
+            "jeans": [
+                "jean",
+                "jeans",
+                "quần"
+            ],
+
+            // TÚI
+            "túi": [
+                "túi",
+                "bag",
+                "backpack"
+            ],
+
+            "balo": [
+                "balo",
+                "backpack",
+                "bag"
+            ],
+
+            // PHỤ KIỆN
+            "phụ kiện": [
+                "phụ kiện",
+                "accessory"
+            ],
+
+            // GIỚI TÍNH
+            "nam": [
+                "nam",
+                "male",
+                "men"
+            ],
+
+            "nữ": [
+                "nữ",
+                "female",
+                "women"
+            ],
+
+            "unisex": [
+                "unisex"
+            ]
+        };
+
+        const results = [];
+
+        // 1. Kiểm tra cả cụm từ
+        if (synonyms[keyword]) {
+            results.push(...synonyms[keyword]);
+        }
+
+        // 2. Kiểm tra từng từ
+        const words = keyword.split(/\s+/);
+
+        words.forEach(word => {
+
+            if (synonyms[word]) {
+                results.push(...synonyms[word]);
+            } else {
+                results.push(word);
+            }
+        });
+
+        // 3. Loại bỏ trùng
+        return [...new Set(results)];
+    }
+
+    // Tìm kiếm có phân trang (after search)
     async searchProducts(keyword, page = 1, limit = 8) {
         let pool = await connectDB();
 

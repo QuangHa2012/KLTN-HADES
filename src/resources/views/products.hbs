@@ -1,51 +1,121 @@
 <div class="products-section container-fluid">
-    <!-- Thanh tìm kiếm -->
-    <form action="/products" method="GET" class="search-bar mb-4 mt-4 d-flex flex-wrap gap-2 align-items-center">
+    <!-- THANH TÌM KIẾM -->
+    <form action="/products{{#if category}}/{{category}}{{/if}}"
+          method="GET"
+          class="search-bar mb-4 mt-4 d-flex flex-wrap gap-2 align-items-center">
+
         <!-- Ô tìm kiếm -->
-        <input type="text" name="q" class="form-control search-input" placeholder="Tìm sản phẩm..." value="{{q}}" style="flex:1;">
+        <input
+            type="text"
+            name="q"
+            class="form-control search-input"
+            placeholder="Tìm sản phẩm..."
+            value="{{q}}"
+            style="flex:1;"
+        >
 
         <!-- Bộ lọc giới tính -->
-        <select name="gender" class="form-select w-auto" onchange="this.form.submit()">
-            <option value="unisex" {{#if (eq gender "unisex")}}selected{{/if}}> Unisex</option>
-            <option value="male" {{#if (eq gender "male")}}selected{{/if}}> Đồ nam</option>
-            <option value="female" {{#if (eq gender "female")}}selected{{/if}}> Đồ nữ</option>
+        <select name="gender"
+                class="form-select w-auto"
+                onchange="this.form.submit()">
+
+            <option value="" {{#if (eq gender "")}}selected{{/if}}>
+                Tất cả
+            </option>
+
+            <option value="unisex" {{#if (eq gender "unisex")}}selected{{/if}}>
+                Unisex
+            </option>
+
+            <option value="male" {{#if (eq gender "male")}}selected{{/if}}>
+                Đồ nam
+            </option>
+
+            <option value="female" {{#if (eq gender "female")}}selected{{/if}}>
+                Đồ nữ
+            </option>
+
         </select>
 
         <!-- Dropdown sắp xếp -->
-        <select name="sort" class="form-select w-auto" onchange="this.form.submit()">
-            <option value="newest" {{#if (eq sort "newest")}}selected{{/if}}>Mới nhất</option>
-            <option value="oldest" {{#if (eq sort "oldest")}}selected{{/if}}>Cũ nhất</option>
-            <option value="price_asc" {{#if (eq sort "price_asc")}}selected{{/if}}>Giá tăng dần</option>
-            <option value="price_desc" {{#if (eq sort "price_desc")}}selected{{/if}}>Giá giảm dần</option>
+        <select name="sort"
+                class="form-select w-auto"
+                onchange="this.form.submit()">
+
+            <option value="newest" {{#if (eq sort "newest")}}selected{{/if}}>
+                Mới nhất
+            </option>
+
+            <option value="oldest" {{#if (eq sort "oldest")}}selected{{/if}}>
+                Cũ nhất
+            </option>
+
+            <option value="price_asc" {{#if (eq sort "price_asc")}}selected{{/if}}>
+                Giá tăng dần
+            </option>
+
+            <option value="price_desc" {{#if (eq sort "price_desc")}}selected{{/if}}>
+                Giá giảm dần
+            </option>
+
         </select>
 
-        <button type="submit" class="btn btn-dark">Tìm kiếm</button>
+        <button type="submit" class="btn btn-dark">
+            Tìm kiếm
+        </button>
     </form>
 
+    <!-- DANH SÁCH SẢN PHẨM -->
     <div class="row row-products">
         {{#if products.length}}
             {{#each products}}
             <div class="col-lg-3 col-md-6 col-sm-6 col-12">
-                <div class="card card-item"> 
+                <div class="card card-item">
                     <a href="/products/{{this.id}}" class="card-img-link">
-                        <img class="card-img-top" src="{{this.img}}" alt="{{this.name}}">
+                        <img
+                            class="card-img-top"
+                            src="{{this.img}}"
+                            alt="{{this.name}}"
+                        >
                     </a>
                     <div class="card-body">
                         <a href="/products/{{this.id}}">
-                            <h3 class="card-title">{{this.name}}</h3>
+                            <h3 class="card-title">
+                                {{this.name}}
+                            </h3>
                         </a>
-                        <p class="card-price">{{formatPrice this.price}}</p>
+
+                        <p class="card-price">
+                            {{formatPrice this.price}}
+                        </p>
                         <div class="btn-container">
                             <!-- Mua ngay -->
                             <form action="/payment/buy-now" method="POST">
-                                <input type="hidden" name="productId" value="{{this.id}}">
-                                <input type="hidden" name="quantity" value="1">
-                                <button type="submit" class="btn btn-dark btn-buy-item">Mua ngay</button>
+                                <input
+                                    type="hidden"
+                                    name="productId"
+                                    value="{{this.id}}"
+                                >
+                                <input
+                                    type="hidden"
+                                    name="quantity"
+                                    value="1"
+                                >
+                                <button
+                                    type="submit"
+                                    class="btn btn-dark btn-buy-item"
+                                >
+                                    Mua ngay
+                                </button>
                             </form>
-
                             <!-- Thêm vào giỏ -->
                             <form action="/carts/add/{{this.id}}" method="POST">
-                                <button type="submit" class="btn btn-dark btn-add-card">Thêm vào giỏ</button>
+                                <button
+                                    type="submit"
+                                    class="btn btn-dark btn-add-card"
+                                >
+                                    Thêm vào giỏ
+                                </button>
                             </form>
                         </div>
                     </div>
@@ -54,43 +124,51 @@
             {{/each}}
         {{else}}
             <div class="col-12">
-                <p class="text-center">Không tìm thấy sản phẩm nào.</p>
+                <p class="text-center">
+                    Không tìm thấy sản phẩm nào.
+                </p>
             </div>
         {{/if}}
-
     </div>
+
 
     <!-- PHÂN TRANG -->
     {{#if totalPages}}
     <div class="mt-5">
-        <div class="col-12 col-lg-12">
+        <div class="col-12">
             <nav aria-label="Page navigation">
                 <ul class="pagination justify-content-center">
-                    <!-- Trang trước -->
+                    <!-- TRANG TRƯỚC -->
                     {{#if (gt currentPage 1)}}
                     <li class="page-item">
-                        <a class="page-link" 
-                        href="/products{{#if category}}/{{category}}{{/if}}?page={{sub currentPage 1}}&sort={{../sort}}{{#if ../q}}&q={{../q}}{{/if}}{{#if ../gender}}&gender={{../gender}}{{/if}}">
+                        <a
+                            class="page-link"
+                            href="/products{{#if category}}/{{category}}{{/if}}?page={{sub currentPage 1}}&sort={{sort}}{{#if q}}&q={{q}}{{/if}}{{#if gender}}&gender={{gender}}{{/if}}"
+                        >
                             Trước
                         </a>
                     </li>
                     {{/if}}
-
-                    <!-- Các trang -->
+                    <!-- CÁC TRANG -->
                     {{#each (range 1 totalPages)}}
                     <li class="page-item {{#if (eq ../currentPage this)}}active{{/if}}">
-                        <a class="page-link" 
-                        href="/products{{#if ../category}}/{{../category}}{{/if}}?page={{this}}&sort={{../sort}}{{#if ../q}}&q={{../q}}{{/if}}{{#if ../gender}}&gender={{../gender}}{{/if}}">
+                        <a
+                            class="page-link"
+                            href="/products{{#if ../category}}/{{../category}}{{/if}}?page={{this}}&sort={{../sort}}{{#if ../q}}&q={{../q}}{{/if}}{{#if ../gender}}&gender={{../gender}}{{/if}}"
+                        >
                             {{this}}
                         </a>
                     </li>
+
                     {{/each}}
 
-                    <!-- Trang sau -->
+                    <!-- TRANG SAU -->
                     {{#if (lt currentPage totalPages)}}
                     <li class="page-item">
-                        <a class="page-link" 
-                        href="/products{{#if category}}/{{category}}{{/if}}?page={{add currentPage 1}}&sort={{../sort}}{{#if ../q}}&q={{../q}}{{/if}}{{#if ../gender}}&gender={{../gender}}{{/if}}">
+                        <a
+                            class="page-link"
+                            href="/products{{#if category}}/{{category}}{{/if}}?page={{add currentPage 1}}&sort={{sort}}{{#if q}}&q={{q}}{{/if}}{{#if gender}}&gender={{gender}}{{/if}}"
+                        >
                             Sau
                         </a>
                     </li>

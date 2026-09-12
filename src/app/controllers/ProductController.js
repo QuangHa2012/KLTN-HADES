@@ -31,81 +31,241 @@ class ProductController {
     
     // GET /products/top
     async getTopProducts(req, res) {
-        const page = parseInt(req.query.page) || 1;
-        const limit = 8;
+        try {
+            const page = parseInt(req.query.page) || 1;
+            const limit = 8;
 
-        const { products, total } = await Product.getProductsByCategoryPaginated("top", page, limit);
-        const totalPages = Math.ceil(total / limit);
+            const sort = req.query.sort || "newest";
 
-        res.render("products", {
-            products,
-            currentPage: page,
-            totalPages,
-            category: "top"
-        });
+            const q = typeof req.query.q === "string"
+                ? req.query.q
+                : "";
+
+            const gender = typeof req.query.gender === "string"
+                ? req.query.gender
+                : "";
+
+            const { products, total } =
+                await Product.getProductsByCategoryPaginated(
+                    "top",
+                    page,
+                    limit,
+                    sort,
+                    q,
+                    gender
+                );
+
+            const totalPages = Math.ceil(total / limit);
+
+            res.render("products", {
+                products,
+                currentPage: page,
+                totalPages,
+                category: "top",
+                sort,
+                q,
+                gender
+            });
+
+        } catch (error) {
+
+            console.error("❌ Lỗi lấy sản phẩm top:", error);
+
+            res.status(500).render("500", {
+                message: "Lỗi server khi tải sản phẩm"
+            });
+        }
     }
     // GET /products/bottom
     async getBottomProducts(req, res) {
-        const page = parseInt(req.query.page) || 1;
-        const limit = 8;
+        try {
+            const page = parseInt(req.query.page) || 1;
+            const limit = 8;
 
-        const { products, total } = await Product.getProductsByCategoryPaginated("bottom", page, limit);
-        const totalPages = Math.ceil(total / limit);
+            const sort = req.query.sort || "newest";
 
-        res.render("products", {
-            products,
-            currentPage: page,
-            totalPages,
-            category: "bottom"
-        });
+            const q = typeof req.query.q === "string"
+                ? req.query.q
+                : "";
+
+            const gender = typeof req.query.gender === "string"
+                ? req.query.gender
+                : "";
+
+            const { products, total } =
+                await Product.getProductsByCategoryPaginated(
+                    "bottom",
+                    page,
+                    limit,
+                    sort,
+                    q,
+                    gender
+                );
+
+            const totalPages = Math.ceil(total / limit);
+
+            res.render("products", {
+                products,
+                currentPage: page,
+                totalPages,
+                category: "bottom",
+                sort,
+                q,
+                gender
+            });
+
+        } catch (error) {
+
+            console.error("❌ Lỗi lấy sản phẩm bottom:", error);
+
+            res.status(500).render("500", {
+                message: "Lỗi server khi tải sản phẩm"
+            });
+        }
     }
 
     // GET /products/outerwears
     async getOuterwearsProducts(req, res) {
-        const page = parseInt(req.query.page) || 1;
-        const limit = 8;
+        try {
+            const page = parseInt(req.query.page) || 1;
+            const limit = 8;
 
-        const { products, total } = await Product.getProductsByCategoryPaginated("outerwear", page, limit);
-        const totalPages = Math.ceil(total / limit);
+            const sort = req.query.sort || "newest";
 
-        res.render("products",  {
-            products,
-            currentPage: page,
-            totalPages,
-            category: "outerwear"
-        });
+            const q = typeof req.query.q === "string"
+                ? req.query.q
+                : "";
+
+            const gender = typeof req.query.gender === "string"
+                ? req.query.gender
+                : "";
+
+            const { products, total } =
+                await Product.getProductsByCategoryPaginated(
+                    "outerwear",
+                    page,
+                    limit,
+                    sort,
+                    q,
+                    gender
+                );
+
+            const totalPages = Math.ceil(total / limit);
+
+            res.render("products", {
+                products,
+                currentPage: page,
+                totalPages,
+                category: "outerwear",
+                sort,
+                q,
+                gender
+            });
+
+        } catch (error) {
+
+            console.error("❌ Lỗi lấy sản phẩm outerwear:", error);
+
+            res.status(500).render("500", {
+                message: "Lỗi server khi tải sản phẩm"
+            });
+        }
     }
 
     // GET /products/accessories
     async getAccessoriesProducts(req, res) {
-        const page = parseInt(req.query.page) || 1;
-        const limit = 8;
+        try {
+            const page = parseInt(req.query.page) || 1;
+            const limit = 8;
 
-        const { products, total } = await Product.getProductsByCategoryPaginated("accessory", page, limit);
-        const totalPages = Math.ceil(total / limit);
+            const sort = req.query.sort || "newest";
 
-        res.render("products", {
-            products,
-            currentPage: page,
-            totalPages,
-            category: "accessory"
-        });
+            const q = typeof req.query.q === "string"
+                ? req.query.q
+                : "";
+
+            const gender = typeof req.query.gender === "string"
+                ? req.query.gender
+                : "";
+
+            const { products, total } =
+                await Product.getProductsByCategoryPaginated(
+                    "accessory",
+                    page,
+                    limit,
+                    sort,
+                    q,
+                    gender
+                );
+
+            const totalPages = Math.ceil(total / limit);
+
+            res.render("products", {
+                products,
+                currentPage: page,
+                totalPages,
+                category: "accessory",
+                sort,
+                q,
+                gender
+            });
+
+        } catch (error) {
+
+            console.error("❌ Lỗi lấy sản phẩm accessory:", error);
+
+            res.status(500).render("500", {
+                message: "Lỗi server khi tải sản phẩm"
+            });
+        }
     }
 
     // GET /products/bags
     async getBagsProducts(req, res) {
-        const page = parseInt(req.query.page) || 1;
-        const limit = 8;
+        try {
+            const page = parseInt(req.query.page) || 1;
+            const limit = 8;
 
-        const { products, total } = await Product.getProductsByCategoryPaginated("bag", page, limit);
-        const totalPages = Math.ceil(total / limit);
+            const sort = req.query.sort || "newest";
 
-        res.render("products", {
-            products,
-            currentPage: page,
-            totalPages,
-            category: "bag"
-        });
+            const q = typeof req.query.q === "string"
+                ? req.query.q
+                : "";
+
+            const gender = typeof req.query.gender === "string"
+                ? req.query.gender
+                : "";
+
+            const { products, total } =
+                await Product.getProductsByCategoryPaginated(
+                    "bag",
+                    page,
+                    limit,
+                    sort,
+                    q,
+                    gender
+                );
+
+            const totalPages = Math.ceil(total / limit);
+
+            res.render("products", {
+                products,
+                currentPage: page,
+                totalPages,
+                category: "bag",
+                sort,
+                q,
+                gender
+            });
+
+        } catch (error) {
+
+            console.error("❌ Lỗi lấy sản phẩm bag:", error);
+
+            res.status(500).render("500", {
+                message: "Lỗi server khi tải sản phẩm"
+            });
+        }
     }
 
 

@@ -15,7 +15,7 @@ const route = require('./routes/index') //import route()
 //static
 app.use(express.static(path.join(__dirname, 'public')))
 
-//xử lý dữ liệu từ form gửi lên
+//process data submitted via the form
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 

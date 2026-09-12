@@ -18,7 +18,7 @@ class CartController {
         try {
             const pool = await connectDB();
 
-            // kiểm tra giỏ hàng
+            // check cart 
             let cartResult = await pool.request()
                 .input('userId', sql.Int, userId)
                 .query('SELECT * FROM Carts WHERE user_id = @userId');
@@ -33,7 +33,7 @@ class CartController {
                 cartId = cartResult.recordset[0].id;
             }
 
-            // kiểm tra tồn kho
+            // check inventory 
             let productResult = await pool.request()
                 .input("productId", sql.Int, productId)
                 .query("SELECT stock FROM Products WHERE id = @productId AND isDeleted = 0");
